@@ -27,7 +27,8 @@ shinyServer(function(input, output) {
 
     # draw the histogram with the specified number of bins
     hist(exp, col = 'darkgray', border = 'white')
-
+    tabl<-t(t(exp))
+    output$table <- renderTable(tabl)
   })
 
 })

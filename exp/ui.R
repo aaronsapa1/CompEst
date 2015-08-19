@@ -20,7 +20,8 @@ shinyUI(fluidPage(
                   min = 1,
                   max = 5000,
                   value = 300),
-      numericInput("lambda", "lambda:", value=10,min=1)
+      numericInput("lambda", "lambda:", value=10,min=1),
+      tableOutput("table")
     ),
 
     # Show a plot of the generated distribution
