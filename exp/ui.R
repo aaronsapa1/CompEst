@@ -12,7 +12,7 @@ shinyUI(fluidPage(
   # Application title
   titlePanel("Exponential Distribuiton"),
 
-  # Sidebar with a slider input for number of bins
+  # S idebar with a slider input for number of bins
   sidebarLayout(
     sidebarPanel(
       sliderInput("nsim",
