@@ -16,7 +16,7 @@ shinyUI(fluidPage(
   sidebarLayout(
     sidebarPanel(
       sliderInput('N', 'Número de simulaciones',
-                  value = 500, min = 500, max = 10000, step = 1),
+                  value = 500, min = 500, max = 1000, step = 1),
       sliderInput('m', 'm',
                   value = 2, min = 0.1, max = 5, step = .1),
       sliderInput('lambda', 'lambda',

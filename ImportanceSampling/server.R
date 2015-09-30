@@ -53,7 +53,7 @@ raw<-function(x){
 }
 shinyServer(function(input, output) {
 
-    N <- reactive(seq(100,input$N,by=100))
+    N <- reactive(seq(100,input$N,by=10))
     
     raw.data<-reactive({
       phi <- function(x){
@@ -69,10 +69,10 @@ shinyServer(function(input, output) {
       }
       exp.is<-function(x){
         U <- runif(x, 0, 1) 
-        X <- -log(1 - (1 - exp(-2*(input$lambda)))*U)
+        X <- -(1/input$lambda)*log(1 - (1 - exp(-2*(input$lambda)))*U)
       }
       g=function(x){
-        dexp(x)/(1-exp(-2*(input$lambda)))
+        dexp(x,rate=input$lambda)/(1-exp(-2*(input$lambda)))
       }
       mc.importanceSampling(phi,N(),X.dens=exp.is,g=g)
       
@@ -97,12 +97,12 @@ shinyServer(function(input, output) {
       }
       exp.is<-function(x,lambda){
         U <- runif(x, 0, 1) 
-        X <- -log(1 - (1 - exp(-2*(input$lambda)))*U)
+        X <- -(1/lambda)*log(1 - (1 - exp(-2*(lambda)))*U)
       }
       g=function(x,lambda){
-        dexp(x)/(1-exp(-2*(lambda)))
+        dexp(x,rate=lambda)/(1-exp(-2*(lambda)))
       }
-      lambda.v<-seq(.1,3*input$m,by=0.1)
+      lambda.v<-seq(.1,5*input$m,by=0.1)
       result<-lapply(lambda.v,function(y){
           X<- exp.is(input$N,y)
           w <- g(X,y)
@@ -118,7 +118,8 @@ shinyServer(function(input, output) {
         geom_line(aes(l,Estim)) + 
         geom_hline(yintercept=1-exp(-2*input$m),linetype="dashed") +
         geom_vline(xintercept=input$m,linetype="dashed") +
-        geom_vline(xintercept=2*input$m,linetype="dashed")
+        geom_vline(xintercept=2*input$m,linetype="dashed") +
+        scale_y_continuous(limits=c(0,2))
       
     })
     
