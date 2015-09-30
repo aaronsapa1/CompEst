@@ -116,10 +116,10 @@ shinyServer(function(input, output) {
       dat<- lambda() %>% mutate(method='lambda')
       ggplot(dat) + 
         geom_line(aes(l,Estim)) + 
+        facet_wrap(~method, nrow = 2) +
         geom_hline(yintercept=1-exp(-2*input$m),linetype="dashed") +
         geom_vline(xintercept=input$m,linetype="dashed") +
-        geom_vline(xintercept=2*input$m,linetype="dashed") +
-        scale_y_continuous(limits=c(0,2))
+        geom_vline(xintercept=2*input$m,linetype="dashed") 
       
     })
     
@@ -146,5 +146,41 @@ shinyServer(function(input, output) {
         facet_wrap(~method, nrow = 2) + geom_hline(yintercept=1-exp(-2*input$m),linetype="dashed")
     })
     
-    output$data<-renderDataTable(lambda())
+    boot <- reactive({
+      phi <- function(x){
+        input$m*exp(-(input$m)*x)
+      }
+      exp.is<-function(x,lambda){
+        U <- runif(x, 0, 1) 
+        X <- -(1/lambda)*log(1 - (1 - exp(-2*(lambda)))*U)
+      }
+      g=function(x,lambda){
+        dexp(x,rate=lambda)/(1-exp(-2*(lambda)))
+      }
+      lambda.v<-seq(.1,3*input$m,by=0.1)
+      nboot<-50
+      result<-sapply(lambda.v,function(y){
+        X<- exp.is(input$N,y)
+        w <- g(X,y)
+        PhiX   <- sapply(X,phi)
+        estim.v<-PhiX/w
+        vboot<- sapply(seq(50),function(x){
+          xr<-sample(estim.v,size=input$N,replace=TRUE)
+          mean(xr)
+        }) 
+        S2 <- var(vboot)
+        return(S2)
+      })
+      print(result)
+      results.table <- ldply(result) %>% mutate(l = lambda.v,Varianza=V1)
+    })
+    output$bootstrap<-renderPlot({
+      dat<- boot() %>% mutate(method='lambda')
+      ggplot(dat) + 
+        geom_line(aes(l,Varianza)) +
+        geom_vline(xintercept=input$m,linetype="dashed") +
+        geom_vline(xintercept=2*input$m,linetype="dashed") 
+    })
+    
+    output$data<-renderDataTable(boot())
 })
