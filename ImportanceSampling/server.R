@@ -83,11 +83,11 @@ shinyServer(function(input, output) {
         input$m*exp(-(input$m)*x)
       }
       beta.is<-function(x){
-        U <- runif(x, 0, 1)
-        rbeta(U,input$a,input$b)
+        #U <- runif(x, 0, 1)
+        2*rbeta(x,input$a,input$b)
       } 
       g=function(x){
-        dbeta(x,input$a,input$b)
+        (.5)*dbeta(.5*x,input$a,input$b)
       }
       mc.importanceSampling(phi,N(),X.dens=beta.is,g=g)
     })
