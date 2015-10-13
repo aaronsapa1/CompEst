@@ -1,3 +1,4 @@
+#Montecarlo
 phi<-function(x){
   2*exp(-2*x)
 }
@@ -7,7 +8,7 @@ X <- -(1/3)*log(1 - (1 - exp(-2*(3)))*U)
 w <- dexp(X,rate=3)/(1-exp(-2*(3)))
 PhiX <- phi(X)
 estim.v <- PhiX/w
-
+#Balanced Bootstrap
 nboot<-50
 X.rep <-rep(estim.v,times=nboot)
 X.i <- sample(1:length(X.rep),replace=FALSE)
@@ -20,13 +21,15 @@ estim.v2 <-sapply(names(X.b),function(x){
 
 estim <- mean(estim.v2)
 sol <- 1-exp(-2*2)
-
+#Antithetic Bootstrap
 X.sort<-sort(estim.v)
 X.sortinv<-sort(estim.v,dec = T)
 #cor(X.sort,X.sortinv)
 X.sum <- (X.sort + X.sortinv)*0.5
 estim.antithetic <- mean(X.sum)
-#merge
+
+
+#Merge of Antithetic y Balanced Bootstrap
 X.b2<-lapply(names(X.b),function(x){
  #sort(X.b[[x]])
    X.sort<-sort(X.b[[x]])
