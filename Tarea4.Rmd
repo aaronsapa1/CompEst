@@ -1,0 +1,86 @@
+---
+title: "Reducción del error por Bootstrap Monte Carlo
+"
+author: "Aarón Sánchez y Sergio Góngora"
+date: "13 de octubre de 2015"
+output: html_document
+---
+#Monte Carlo
+```{r}
+#Ejemplo de la tarea anterior
+phi<-function(x){
+  2*exp(-2*x)
+}
+sample.size<-1000
+U <- runif(sample.size, 0, 1) 
+#Se escoge una lambda mayor que m para agregar ruido
+X <- -(1/3)*log(1 - (1 - exp(-2*(3)))*U)
+w <- dexp(X,rate=3)/(1-exp(-2*(3)))
+PhiX <- phi(X)
+estim.v <- PhiX/w
+#Estimación por Monte Carlo
+estim.mc <- mean(estim.v)
+#Valor verdadero
+sol <- 1-exp(-2*2)
+```
+#Balanced Bootstrap
+
+El objetivo de este método es corregir la variación que agrega la implementación de Bootstrap Monte Carlo. Debido a que, aunque la media de la muestra sea igual que la verdadera media, lo que significa que no tenemos sesgo alguno, al implemente Bootstrap Monte Carlo, necesariamente se agrega un sesgo debido a que al escoger diversos sub-sets para la utilización del método de Bootstrap,es poco probable escoger valores que en promedio se acerquen a la verdadera media.
+
+Por lo tanto, la forma más simple de corregir esta variación, es concatenar B copias de los datos observados, permutar aleatoriamente estas series y crear B bloques del tamaño original de los datos observados. De esta forma se corrige el error.
+
+
+```{r}
+#Se repetira 'nboot' veces los datos originales
+nboot<-50
+X.rep <-rep(estim.v,times=nboot)
+#Se obtiene una permutación de los índices para filtrar aleatoriamente los datos
+X.i <- sample(1:length(X.rep),replace=FALSE)
+#Se permuta aleatoriamente los datos y se crean 'nboot' sets nuevos.
+X.b <- split(X.rep[X.i],1:nboot)
+#Balanceo
+#Obtengo la media de cada uno de los sets nuevos
+estim.v2 <-sapply(names(X.b),function(x){
+  mean(X.b[[x]])
+})
+#Estimación después del balanceo
+estim.b <- mean(estim.v2)
+```
+#Antithetic Bootstrap
+La objetivo de esta técnica es reducir la varianza del estimador utilizado.La idea es la siguiente:
+
+Para una muestra de datos univariados denotados por x1,...,xn se puede denotar el ordenamiento de los datos como x(1),...,x(n) donde se cumple que cada x(i) es el i-ésimo valor más pequeño dentro del conjunto de datos. Denotemos el conjunto de datos ordenados como X\*. Si se considera un nuevo ordenamiento inverso al anterior, denotado por X\*\* se obtienen dos estimadores: R(X\*,F) y R(X\*\*,F) que suelen estar negativamente relacionados. 
+
+Se determina ahora un nuevo estimador Y definido de la siguiente manera: 
+
+R(Y,F)=(1/2)(R(X\*,F) + R(X\*\*,F)) 
+
+Y cumple con la propiedad de que estima la cantidad de interés con varianza:
+
+var{R(Y, F)}= (1/4)\* var{R(X\*, F)} + var{R(X\*\*, F)} + 2 cov{R(X\*, F), R(X\*\*, F)} 
+
+Que cumple ser menor a var{R(X\*, F)} si la covarianza es negativa.
+
+```{r}
+#Tomamos los datos iniciales después de Monte Carlo
+#Antithetic Bootstrap
+X.sort<-sort(estim.v)
+X.sortinv<-sort(estim.v,dec = T)
+X.sum <- (X.sort + X.sortinv)*0.5
+estim.antithetic <- mean(X.sum)
+```
+
+Comparación de los resultados
+
+```{r}
+print(estim.mc)
+print(estim.b)
+print(estim.antithetic)
+```
+
+Valor verdadero
+```{r}
+print(sol)
+```
+
+
