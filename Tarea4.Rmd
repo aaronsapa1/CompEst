@@ -6,47 +6,71 @@ date: "13 de octubre de 2015"
 output: html_document
 ---
 #Monte Carlo
+```{r,echo=FALSE}
+library(boot)
+```
+
 ```{r}
 #Ejemplo de la tarea anterior
 phi<-function(x){
   2*exp(-2*x)
 }
 sample.size<-50
-U <- runif(sample.size, 0, 1) 
-#Se escoge una lambda mayor que m para agregar ruido
-X <- -(1/2)*log(1 - (1 - exp(-2*(2)))*U)
-w <- dexp(X,rate=2)/(1-exp(-2*(2)))
-PhiX <- phi(X)
-estim.v <- PhiX/w
-#Estimación por Monte Carlo
-estim.mc <- mean(estim.v)
-#Valor verdadero
-sol <- 1-exp(-2*2)
+sesgo<-function(v){
+  n<-length(v)
+  m<-mean(v)
+  sum((v-m)^2)
+}
+getSample<-function(n){
+  U <- runif(n, 0, 1) 
+  X <- -(1/2)*log(1 - (1 - exp(-2*(2.2)))*U)
+}
+sample.size<-50
+mc<-function(){
+  x<-getSample(sample.size)
+  w <- dexp(x,rate=2)/(1-exp(-2*(2)))
+  PhiX <- phi(x)
+  estim.v <- PhiX/w
+  estim.v
+}
+mc.boot <-function(v,i){
+  x<-v[i]
+  w <- dexp(x,rate=2)/(1-exp(-2*(2)))
+  PhiX <- phi(x)
+  estim.v <- PhiX/w
+  return(sesgo(estim.v))
+}
+X<-getSample(sample.size)
+sesgo.bootmc<-boot(X,mc.boot,R=10)
 ```
+
+
+
 #Balanced Bootstrap
 
 El objetivo de este método es corregir la variación que agrega la implementación de Bootstrap Monte Carlo. Debido a que, aunque la media de la muestra sea igual que la verdadera media, lo que significa que no tenemos sesgo alguno, al implemente Bootstrap Monte Carlo, necesariamente se agrega un sesgo debido a que al escoger diversos sub-sets para la utilización del método de Bootstrap,es poco probable escoger valores que en promedio se acerquen a la verdadera media.
 
 Por lo tanto, la forma más simple de corregir esta variación, es concatenar B copias de los datos observados, permutar aleatoriamente estas series y crear B bloques del tamaño original de los datos observados. De esta forma se corrige el error.
 
-
 ```{r}
-#Se repetira 'nboot' veces los datos originales
-nboot<-50
-X.rep <-rep(estim.v,times=nboot)
-#Se obtiene una permutación de los índices para filtrar aleatoriamente los datos
-X.i <- sample(1:length(X.rep),replace=FALSE)
-#Se permuta aleatoriamente los datos y se crean 'nboot' sets nuevos.
-X.b <- split(X.rep[X.i],1:nboot)
-#Balanceo
-#Obtengo la media de cada uno de los sets nuevos
-estim.v2 <-sapply(names(X.b),function(x){
-  #mean(X.b[[x]])
-  var(X.b[[x]])
-})
-#Estimación después del balanceo
-estim.b <- mean(estim.v2)
+balance<-function(n){
+  estim.v <- mc()
+  X.rep <-rep(estim.v,times=n)
+  #Se obtiene una permutación de los índices para filtrar aleatoriamente los datos
+  X.i <- sample(1:length(X.rep),replace=FALSE)
+  #Se permuta aleatoriamente los datos y se crean 'nboot' sets nuevos.
+  X.b <- split(X.rep[X.i],1:n)
+  #Balanceo
+  #Obtengo la media de cada uno de los sets nuevos
+  estim.v2 <-sapply(names(X.b),function(x){
+    sesgo(X.b[[x]])
+  })
+  #Cálculo del sesgo
+  mean(estim.v2)
+}
+sesgo.balance<-replicate(10,balance(1000))
 ```
+
 #Antithetic Bootstrap
 La objetivo de esta técnica es reducir la varianza del estimador utilizado.La idea es la siguiente:
 
@@ -63,44 +87,40 @@ var{R(Y, F)}= (1/4)\* var{R(X\*, F)} + var{R(X\*\*, F)} + 2 cov{R(X\*, F), R(X\*
 Que cumple ser menor a var{R(X\*, F)} si la covarianza es negativa.
 
 ```{r}
-#Tomamos los datos iniciales después de Monte Carlo
-#Antithetic Bootstrap
-X.sort<-sort(estim.v)
-X.sortinv<-sort(estim.v,dec = T)
-X.sum <- (X.sort + X.sortinv)*0.5
-#estim.antithetic <- mean(X.sum)
-estim.antithetic <- var(X.sum)
+antithetic<-function(n){
+  estim.v <- mc()
+  X.rep <-rep(estim.v,times=n)
+  #Se obtiene una permutación de los índices para filtrar aleatoriamente los datos
+  X.i <- sample(1:length(X.rep),replace=FALSE)
+  #Se permuta aleatoriamente los datos y se crean 'nboot' sets nuevos.
+  X.b <- split(X.rep[X.i],1:n)
+  X.b2<-lapply(names(X.b),function(x){
+    X.sort<-sort(X.b[[x]])
+    X.sortinv<-sort(X.b[[x]],dec = T)
+    X.sum <- (X.sort + X.sortinv)*0.5
+    sesgo(X.sum)
+  })
+  X.b2
+}
+sesgo.anti<-replicate(10,balance(1000))
 ```
 
 Comparación de los resultados
 
 ```{r}
-print(estim.mc)
-print(estim.b)
-print(estim.antithetic)
+table<-cbind(sesgo.bootmc$t,sesgo.balance,sesgo.anti)
+colnames(table)[1]<-c("sesgo.bootmc")
+table
 ```
 
-Valor verdadero
+Promedios
 ```{r}
-print(sol)
+table2<-cbind(mean(table[,1]),mean(table[,2]),mean(table[,3]))
+#<-c("mean.bootmc","mean.balance","mean.anti")
+table2
 ```
 
-#Anthitetic-Bootstrap
 
-```{r}
-X.b2<-lapply(names(X.b),function(x){
-  X.sort<-sort(X.b[[x]])
-  X.sortinv<-sort(X.b[[x]],dec = T)
-  X.sum <- (X.sort + X.sortinv)*0.5
-})
-estim.v3 <-sapply(X.b2,function(x){
-  #mean(x)
-  var(x)
-})
-estim.merge <- mean(estim.v3)
-```
-```{r}
-estim.merge 
 
-```
+
 
