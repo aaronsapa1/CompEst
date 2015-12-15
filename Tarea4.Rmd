@@ -41,7 +41,7 @@ mc.boot <-function(v,i){
   return(sesgo(estim.v))
 }
 X<-getSample(sample.size)
-sesgo.bootmc<-boot(X,mc.boot,R=10)
+sesgo.bootmc<-boot(X,mc.boot,R=30)
 ```
 
 
@@ -68,7 +68,7 @@ balance<-function(n){
   #Cálculo del sesgo
   mean(estim.v2)
 }
-sesgo.balance<-replicate(10,balance(1000))
+sesgo.balance<-replicate(30,balance(1000))
 ```
 
 #Antithetic Bootstrap
@@ -102,7 +102,7 @@ antithetic<-function(n){
   })
   X.b2
 }
-sesgo.anti<-replicate(10,balance(1000))
+sesgo.anti<-replicate(30,balance(1000))
 ```
 
 Comparación de los resultados

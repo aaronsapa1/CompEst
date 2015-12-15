@@ -91,7 +91,7 @@ mc.boot &lt;-function(v,i){
   return(sesgo(estim.v))
 }
 X&lt;-getSample(sample.size)
-sesgo.bootmc&lt;-boot(X,mc.boot,R=10)</code></pre>
+sesgo.bootmc&lt;-boot(X,mc.boot,R=30)</code></pre>
 </div>
 <div id="balanced-bootstrap" class="section level1">
 <h1>Balanced Bootstrap</h1>
@@ -112,7 +112,7 @@ sesgo.bootmc&lt;-boot(X,mc.boot,R=10)</code></pre>
   #Cálculo del sesgo
   mean(estim.v2)
 }
-sesgo.balance&lt;-replicate(10,balance(1000))</code></pre>
+sesgo.balance&lt;-replicate(30,balance(1000))</code></pre>
 </div>
 <div id="antithetic-bootstrap" class="section level1">
 <h1>Antithetic Bootstrap</h1>
@@ -138,28 +138,48 @@ sesgo.balance&lt;-replicate(10,balance(1000))</code></pre>
   })
   X.b2
 }
-sesgo.anti&lt;-replicate(10,balance(1000))</code></pre>
+sesgo.anti&lt;-replicate(30,balance(1000))</code></pre>
 <p>Comparación de los resultados</p>
 <pre class="r"><code>table&lt;-cbind(sesgo.bootmc$t,sesgo.balance,sesgo.anti)
 colnames(table)[1]&lt;-c(&quot;sesgo.bootmc&quot;)
 table</code></pre>
 <pre><code>##       sesgo.bootmc sesgo.balance   sesgo.anti
-##  [1,] 2.095412e-31  1.232595e-31 1.232595e-31
-##  [2,] 9.860761e-32  1.109336e-31 1.355855e-31
-##  [3,] 1.972152e-31  1.232595e-31 1.232595e-31
-##  [4,] 9.860761e-32  2.095412e-31 1.232595e-31
-##  [5,] 1.972152e-31  9.860761e-32 9.860761e-32
-##  [6,] 1.479114e-31  1.479114e-31 1.232595e-31
-##  [7,] 1.232595e-31  1.355855e-31 1.355855e-31
-##  [8,] 1.972152e-31  1.355855e-31 1.848893e-31
-##  [9,] 1.232595e-31  1.972152e-31 2.095412e-31
-## [10,] 1.355855e-31  1.602374e-31 1.232595e-31</code></pre>
+##  [1,] 1.109336e-31  1.109336e-31 1.355855e-31
+##  [2,] 2.218671e-31  9.860761e-32 1.602374e-31
+##  [3,] 6.162976e-32  1.232595e-31 1.232595e-31
+##  [4,] 7.395571e-32  1.355855e-31 2.218671e-31
+##  [5,] 1.972152e-31  1.972152e-31 1.232595e-31
+##  [6,] 1.232595e-31  9.860761e-32 9.860761e-32
+##  [7,] 8.628166e-32  1.725633e-31 1.848893e-31
+##  [8,] 7.395571e-32  7.395571e-32 1.232595e-31
+##  [9,] 1.355855e-31  1.232595e-31 1.725633e-31
+## [10,] 1.725633e-31  2.095412e-31 1.725633e-31
+## [11,] 1.848893e-31  1.602374e-31 1.725633e-31
+## [12,] 1.479114e-31  1.848893e-31 1.355855e-31
+## [13,] 1.479114e-31  1.109336e-31 1.602374e-31
+## [14,] 1.109336e-31  1.725633e-31 1.602374e-31
+## [15,] 1.232595e-31  1.602374e-31 1.848893e-31
+## [16,] 9.860761e-32  1.725633e-31 1.355855e-31
+## [17,] 1.355855e-31  2.218671e-31 1.355855e-31
+## [18,] 1.602374e-31  1.109336e-31 8.628166e-32
+## [19,] 1.355855e-31  1.109336e-31 1.232595e-31
+## [20,] 9.860761e-32  1.479114e-31 1.479114e-31
+## [21,] 9.860761e-32  1.109336e-31 1.109336e-31
+## [22,] 1.848893e-31  1.355855e-31 7.395571e-32
+## [23,] 1.355855e-31  1.232595e-31 9.860761e-32
+## [24,] 1.479114e-31  1.479114e-31 1.232595e-31
+## [25,] 1.725633e-31  1.232595e-31 9.860761e-32
+## [26,] 1.972152e-31  1.479114e-31 1.848893e-31
+## [27,] 1.232595e-31  1.355855e-31 1.355855e-31
+## [28,] 1.479114e-31  1.848893e-31 2.095412e-31
+## [29,] 1.479114e-31  1.232595e-31 1.479114e-31
+## [30,] 1.109336e-31  2.341931e-31 1.972152e-31</code></pre>
 <p>Promedios</p>
 <pre class="r"><code>table2&lt;-cbind(mean(table[,1]),mean(table[,2]),mean(table[,3]))
 #&lt;-c(&quot;mean.bootmc&quot;,&quot;mean.balance&quot;,&quot;mean.anti&quot;)
 table2</code></pre>
 <pre><code>##              [,1]         [,2]         [,3]
-## [1,] 1.528418e-31 1.442136e-31 1.380507e-31</code></pre>
+## [1,] 1.355855e-31 1.454462e-31 1.446245e-31</code></pre>
 </div>
 
 
